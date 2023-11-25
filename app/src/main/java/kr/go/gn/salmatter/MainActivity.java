@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     USER_DATA = new JSONArray(result).getJSONObject(0);
                     loadingBar.setVisibility(View.INVISIBLE);
-                    startActivity(new Intent(MainActivity.this, UnityPlayerActivity.class));
+                    startActivity(new Intent(MainActivity.this, UnityActivity.class));
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }

@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">Salmatter</string>
-    <string name="ID">0</string>
+    <string name="game_view_content_description">Game view</string>
 </resources>
