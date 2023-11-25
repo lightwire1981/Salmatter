@@ -6,6 +6,7 @@ import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
@@ -68,7 +69,7 @@ public class DBRequest {
             switch (type) {
                 case JOIN -> URL = SERVER_URL + "?" + key + REQUEST_TYPE.JOIN.name();
                 case GET_DATA ->
-                        URL = SERVER_URL + "?" + key + REQUEST_TYPE.GET_DATA.name() + id + param;
+                        URL = SERVER_URL + "?" + key + REQUEST_TYPE.GET_DATA.name() + "&" + id + param;
                 default -> {
                     Log.e("<<<<<<<<<<<< URL Error : ", param);
                     return "";
@@ -76,25 +77,45 @@ public class DBRequest {
             }
             Log.i("<<<<<<<<<<< URL : ", URL);
 
-            HttpsURLConnection httpsURLConnection = (HttpsURLConnection)(new URL(URL)).openConnection();
-            httpsURLConnection.setDoInput(true);
-            httpsURLConnection.setDoOutput(true);
-            httpsURLConnection.setUseCaches(false);
-            httpsURLConnection.setReadTimeout(10000);
-            httpsURLConnection.setConnectTimeout(15000);
-            httpsURLConnection.setRequestMethod("POST");
-            httpsURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            HttpURLConnection httpURLConnection = (HttpURLConnection)(new URL(URL)).openConnection();
+            httpURLConnection.setDoInput(true);
+            httpURLConnection.setDoOutput(true);
+            httpURLConnection.setUseCaches(false);
+            httpURLConnection.setReadTimeout(10000);
+            httpURLConnection.setConnectTimeout(15000);
+            httpURLConnection.setRequestMethod("POST");
+            httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
-            if (httpsURLConnection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
+            if (httpURLConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 Log.e(TAG, "Http Connection Fail");
-                Log.d(TAG, httpsURLConnection.getResponseMessage());
-                Log.d(TAG, httpsURLConnection.getResponseCode()+"");
+                Log.d(TAG, httpURLConnection.getResponseMessage());
+                Log.d(TAG, httpURLConnection.getResponseCode()+"");
                 return null;
             }
-            response = (new BufferedReader(new InputStreamReader(httpsURLConnection.getInputStream(), StandardCharsets.UTF_8))).readLine();
+            response = (new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream(), StandardCharsets.UTF_8))).readLine();
             Log.d(TAG, "Response Value :: "+response);
 
             return response;
+
+//            HttpsURLConnection httpsURLConnection = (HttpsURLConnection)(new URL(URL)).openConnection();
+//            httpsURLConnection.setDoInput(true);
+//            httpsURLConnection.setDoOutput(true);
+//            httpsURLConnection.setUseCaches(false);
+//            httpsURLConnection.setReadTimeout(10000);
+//            httpsURLConnection.setConnectTimeout(15000);
+//            httpsURLConnection.setRequestMethod("POST");
+//            httpsURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+//
+//            if (httpsURLConnection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
+//                Log.e(TAG, "Http Connection Fail");
+//                Log.d(TAG, httpsURLConnection.getResponseMessage());
+//                Log.d(TAG, httpsURLConnection.getResponseCode()+"");
+//                return null;
+//            }
+//            response = (new BufferedReader(new InputStreamReader(httpsURLConnection.getInputStream(), StandardCharsets.UTF_8))).readLine();
+//            Log.d(TAG, "Response Value :: "+response);
+//
+//            return response;
         }
     }
 }

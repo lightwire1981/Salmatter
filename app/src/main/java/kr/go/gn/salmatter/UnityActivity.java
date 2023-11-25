@@ -14,8 +14,14 @@ import android.view.Window;
 
 import androidx.annotation.Nullable;
 
+//public class UnityActivity {
+//
+//}
+
 import com.unity3d.player.IUnityPlayerLifecycleEvents;
 import com.unity3d.player.UnityPlayer;
+
+import kr.go.gn.salmatter.utils.PreferenceSetting;
 
 public class UnityActivity extends Activity implements IUnityPlayerLifecycleEvents {
 
@@ -31,6 +37,7 @@ public class UnityActivity extends Activity implements IUnityPlayerLifecycleEven
         super.onCreate(savedInstanceState);
 
         String cmdLine = updateUnityCommandLineArguments(getIntent().getStringExtra("unity"));
+        getIntent().putExtra("unity", cmdLine);
 
         mUnityPlayer = new UnityPlayer(this, this);
         setContentView(mUnityPlayer);
@@ -41,7 +48,7 @@ public class UnityActivity extends Activity implements IUnityPlayerLifecycleEven
             public void handleMessage(Message msg) {
 //                UnityPlayer.UnitySendMessage("SuperManager", "GameSpeed", PreferenceSetting.LoadPreference(getBaseContext(), PreferenceSetting.PREFERENCE_KEY.SPEED_INFO));
 //                UnityPlayer.UnitySendMessage("SuperManager", "GameAuto", getIntent().getStringExtra("auto"));
-//                UnityPlayer.UnitySendMessage("SuperManager", "GameProfile", cmdLine);
+                UnityPlayer.UnitySendMessage("SuperManager", "ID", PreferenceSetting.LoadPreference(getBaseContext(), PreferenceSetting.PREFERENCE_KEY.USER_ID));
 //
 //                Log.i("<<<<<<<<<<<<<<<<<<<<<<<<<<< 코드 확인", PreferenceSetting.LoadPreference(getBaseContext(), PreferenceSetting.PREFERENCE_KEY.SPEED_INFO));
 //                Log.i("<<<<<<<<<<<<<<<<<<<<<<<<<<< 코드 확인", getIntent().getStringExtra("auto"));
