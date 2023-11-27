@@ -81,26 +81,45 @@ public class MainActivity extends AppCompatActivity {
                     USER_DATA = new JSONArray(result).getJSONObject(0);
                     PreferenceSetting.SavePreference(getBaseContext(), PreferenceSetting.PREFERENCE_KEY.USER_ID, USER_DATA.getString("user_id"));
                     loadingBar.setVisibility(View.INVISIBLE);
-                    Intent i = new Intent(MainActivity.this, UnityActivity.class);
-                    i.putExtra("unity", user_id);
-                    startActivity(i);
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                }
-            };
-            new DBRequest(getBaseContext(), new Handler(Looper.getMainLooper())).executeAsync(DBRequest.REQUEST_TYPE.JOIN, "", onCompleteListener);
-        } else {
-            DBRequest.OnCompleteListener onCompleteListener = result -> {
-                Log.d("<<<<<<<<<<< Response Data : ", result);
-                try {
-                    USER_DATA = new JSONArray(result).getJSONObject(0);
-                    loadingBar.setVisibility(View.INVISIBLE);
+                    String stamp_data = "";
+                    for (int i=1; i<9; i++) {
+                        if (i>1) stamp_data += "#";
+                        stamp_data += USER_DATA.getString("user_stamp"+i);
+                    }
+                    Log.d("<Stamp Status : ", stamp_data);
+                    PreferenceSetting.SavePreference(getBaseContext(), PreferenceSetting.PREFERENCE_KEY.STAMP_DATA, stamp_data);
+//                    Intent i = new Intent(MainActivity.this, UnityActivity.class);
+//                    i.putExtra("user_data", result);
                     startActivity(new Intent(MainActivity.this, UnityActivity.class));
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
             };
-            new DBRequest(getBaseContext(), new Handler(Looper.getMainLooper())).executeAsync(DBRequest.REQUEST_TYPE.GET_DATA, user_id, onCompleteListener);
+            new DBRequest(getBaseContext(), new Handler(Looper.getMainLooper())).executeAsync(DBRequest.REQUEST_TYPE.JOIN, onCompleteListener, "");
+        } else {
+            DBRequest.OnCompleteListener onCompleteListener = result -> {
+                Log.d("<Response Data : ", result);
+                loadingBar.setVisibility(View.INVISIBLE);
+                try {
+                    USER_DATA = new JSONArray(result).getJSONObject(0);
+                    String stamp_data = "";
+                    for (int i=1; i<9; i++) {
+                        if (i>1) stamp_data += "#";
+                        stamp_data += USER_DATA.getString("user_stamp"+i);
+                    }
+                    Log.d("<Stamp Status : ", stamp_data);
+                    PreferenceSetting.SavePreference(getBaseContext(), PreferenceSetting.PREFERENCE_KEY.STAMP_DATA, stamp_data);
+//                    Intent i = new Intent(MainActivity.this, UnityActivity.class);
+//                    i.putExtra("user_data", result);
+                    startActivity(new Intent(MainActivity.this, UnityActivity.class));
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+//                Intent i = new Intent(MainActivity.this, UnityActivity.class);
+//                i.putExtra("user_data", result);
+//                startActivity(i);
+            };
+            new DBRequest(getBaseContext(), new Handler(Looper.getMainLooper())).executeAsync(DBRequest.REQUEST_TYPE.GET_DATA, onCompleteListener, user_id);
         }
     }
 }

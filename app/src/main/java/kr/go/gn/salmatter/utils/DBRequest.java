@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,7 +22,8 @@ public class DBRequest {
 
     public static enum REQUEST_TYPE {
         JOIN,
-        GET_DATA
+        GET_DATA,
+        UPDATE
     }
 
     private Context context;
@@ -39,10 +41,10 @@ public class DBRequest {
         void onComplete(String result);
     }
 
-    public void executeAsync(REQUEST_TYPE type, String userID, OnCompleteListener onCompleteListener) {
+    public void executeAsync(REQUEST_TYPE type, OnCompleteListener onCompleteListener, String... params) {
         service.execute(()-> {
             try {
-                final String result = new RequestData(type, userID).call();
+                final String result = new RequestData(type, params).call();
                 resultHandler.post(() -> onCompleteListener.onComplete(result));
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -53,15 +55,17 @@ public class DBRequest {
     static class RequestData implements Callable<String> {
 
         REQUEST_TYPE type;
-        String param;
+        String[] params;
         String URL;
         String key = "USE=";
         String id = "USER_ID=";
+
+        String stamp = "NUMBER=";
         final String TAG = "DBRequest";
 
-        public RequestData(REQUEST_TYPE type, String param) {
+        public RequestData(REQUEST_TYPE type, String... params) {
             this.type = type;
-            this.param = param;
+            this.params = params;
         }
         @Override
         public String call() throws Exception {
@@ -69,9 +73,10 @@ public class DBRequest {
             switch (type) {
                 case JOIN -> URL = SERVER_URL + "?" + key + REQUEST_TYPE.JOIN.name();
                 case GET_DATA ->
-                        URL = SERVER_URL + "?" + key + REQUEST_TYPE.GET_DATA.name() + "&" + id + param;
+                        URL = SERVER_URL + "?" + key + REQUEST_TYPE.GET_DATA.name() + "&" + id + params[0];
+                case UPDATE -> URL = SERVER_URL + "?" + key + REQUEST_TYPE.UPDATE.name() + "&" + id + params[0] + "&" + stamp + params[1];
                 default -> {
-                    Log.e("<<<<<<<<<<<< URL Error : ", param);
+                    Log.e("<<<<<<<<<<<< URL Error : ", Arrays.toString(params));
                     return "";
                 }
             }

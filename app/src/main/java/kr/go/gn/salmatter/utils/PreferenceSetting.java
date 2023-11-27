@@ -10,7 +10,8 @@ public class PreferenceSetting {
     private static final String TAG = "PreferenceSetting";
 
     public enum PREFERENCE_KEY {
-        USER_ID
+        USER_ID,
+        STAMP_DATA
     }
 
     public static String LoadPreference(Context context, PREFERENCE_KEY category) {
@@ -21,6 +22,11 @@ public class PreferenceSetting {
             returnValue = preferences.getString(PREFERENCE_KEY.USER_ID.name(), "");
         } else {
             returnValue = "";
+        }
+        switch (category) {
+            case USER_ID -> returnValue = preferences.getString(PREFERENCE_KEY.USER_ID.name(), "");
+            case STAMP_DATA -> returnValue = preferences.getString(PREFERENCE_KEY.STAMP_DATA.name(), "");
+            default -> returnValue = "";
         }
         return returnValue;
     }

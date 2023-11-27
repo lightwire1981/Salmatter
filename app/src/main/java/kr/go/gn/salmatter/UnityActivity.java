@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Window;
@@ -16,48 +17,72 @@ import androidx.annotation.Nullable;
 import com.unity3d.player.IUnityPlayerLifecycleEvents;
 import com.unity3d.player.UnityPlayer;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import kr.go.gn.salmatter.utils.DBRequest;
 import kr.go.gn.salmatter.utils.PreferenceSetting;
 
 public class UnityActivity extends Activity implements IUnityPlayerLifecycleEvents {
 
-    protected UnityPlayer mUnityPlayer;
-    protected String updateUnityCommandLineArguments(String cmdLine)
-    {
-        return cmdLine;
+    private static enum MSG_TYPE {
+        GameStamp,
+        DoneStamp
     }
+
+    protected UnityPlayer mUnityPlayer;
+    private static String USER_ID;
+    private static String STAMP_DATA;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
 
-        String cmdLine = updateUnityCommandLineArguments(getIntent().getStringExtra("unity"));
-        getIntent().putExtra("unity", cmdLine);
+        USER_ID = PreferenceSetting.LoadPreference(getBaseContext(), PreferenceSetting.PREFERENCE_KEY.USER_ID);
+        STAMP_DATA = PreferenceSetting.LoadPreference(getBaseContext(), PreferenceSetting.PREFERENCE_KEY.STAMP_DATA);
 
         mUnityPlayer = new UnityPlayer(this, this);
         setContentView(mUnityPlayer);
         mUnityPlayer.requestFocus();
 
+        sendStr(MSG_TYPE.GameStamp.name(), STAMP_DATA);
+    }
+
+    public void sendStr(String type, String code) {
+
+        long delay = 9000;
+        if (type.equals(MSG_TYPE.DoneStamp.name())) delay = 500;
         final Handler handler = new Handler(Looper.getMainLooper()){
             @Override
             public void handleMessage(Message msg) {
-//                UnityPlayer.UnitySendMessage("SuperManager", "GameSpeed", PreferenceSetting.LoadPreference(getBaseContext(), PreferenceSetting.PREFERENCE_KEY.SPEED_INFO));
-//                UnityPlayer.UnitySendMessage("SuperManager", "GameAuto", getIntent().getStringExtra("auto"));
-                UnityPlayer.UnitySendMessage("SuperManager", "ID", PreferenceSetting.LoadPreference(getBaseContext(), PreferenceSetting.PREFERENCE_KEY.USER_ID));
-//
-//                Log.i("<<<<<<<<<<<<<<<<<<<<<<<<<<< 코드 확인", PreferenceSetting.LoadPreference(getBaseContext(), PreferenceSetting.PREFERENCE_KEY.SPEED_INFO));
-//                Log.i("<<<<<<<<<<<<<<<<<<<<<<<<<<< 코드 확인", getIntent().getStringExtra("auto"));
-//                Log.i("<<<<<<<<<<<<<<<<<<<<<<<<<<< 코드 확인", cmdLine);
-//                if (getIntent().getStringExtra("auto").equals("1")) {
-//                    UnityPlayer.UnitySendMessage("SuperManager", "GameTraining", getIntent().getStringExtra("training"));
-//                    Log.i("<<<<<<<<<<<<<<<<<<<<<<<<<<< 코드 확인", getIntent().getStringExtra("training"));
-//                }
-//
-//                Log.i("<<<<<<<<<<<<<<<<<<<<<<<< 대기 시작", "9초 대기");
-
+//                String testCode = "1#0#0#0#0#0#0#0";
+                UnityPlayer.UnitySendMessage("SceneManager", type, code);
             }
         };
-        handler.sendEmptyMessageDelayed(0,9000);
+        // 유니티 로딩 타임을 위해 초기 9초 대기 이후 0.5초
+        handler.sendEmptyMessageDelayed(0,delay);
+    }
+
+    public void receiveStr(String str) {
+        Log.i("Str From Unity >>>>>>>>>>>>", str);
+
+        try {
+            JSONObject rawData = new JSONObject(str);
+            if ("SetStamp".equals(rawData.getString("type"))) {// {"type":"SetStamp","stamp_num":"1"}
+                String stamp = rawData.getString("stamp_num");
+                DBRequest.OnCompleteListener onCompleteListener = result -> {
+                    if (result.equals("STAMP_COMPLETE")) {
+                        sendStr(MSG_TYPE.DoneStamp.name(), "");
+                    }
+                };
+                new DBRequest(getBaseContext(), new Handler(Looper.getMainLooper())).executeAsync(DBRequest.REQUEST_TYPE.UPDATE, onCompleteListener, USER_ID, stamp);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+//        System.exit(0);
     }
 
     @Override
