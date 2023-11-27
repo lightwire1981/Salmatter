@@ -58,7 +58,7 @@ public class UnityActivity extends Activity implements IUnityPlayerLifecycleEven
             @Override
             public void handleMessage(Message msg) {
 //                String testCode = "1#0#0#0#0#0#0#0";
-                UnityPlayer.UnitySendMessage("SceneManager", type, code);
+                UnityPlayer.UnitySendMessage("SuperManager", type, code);
             }
         };
         // 유니티 로딩 타임을 위해 초기 9초 대기 이후 0.5초
